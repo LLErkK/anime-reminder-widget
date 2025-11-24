@@ -26,7 +26,7 @@ func GetDB() *gorm.DB {
 }
 
 func migrate() {
-	err := db.AutoMigrate(&models.Anime{}, &models.Anime{})
+	err := db.AutoMigrate(&models.Anime{}, &models.RingTone{})
 	if err != nil {
 		fmt.Println(err)
 	}

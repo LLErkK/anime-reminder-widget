@@ -61,7 +61,7 @@ func (ac *AnimeController) GetAnimeByTitle(title string) (*models.Anime, error) 
 func (ac *AnimeController) GetAllAnimes() ([]models.Anime, error) {
 	db := database.GetDB()
 	var animes []models.Anime
-	result := db.Find(animes)
+	result := db.Find(&animes)
 	if result.Error != nil {
 		return nil, result.Error
 	}
