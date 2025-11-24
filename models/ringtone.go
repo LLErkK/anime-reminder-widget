@@ -3,9 +3,9 @@ package models
 import "time"
 
 type RingTone struct {
-	Id        uint
+	Id        uint `gorm:"primary_key;auto_increment"`
 	Name      string
-	Song_path string
+	SongPath  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
