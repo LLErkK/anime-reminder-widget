@@ -3,6 +3,7 @@ package controllers
 import (
 	"anime-reminder/database"
 	"anime-reminder/models"
+	"anime-reminder/utils"
 	"errors"
 	"time"
 )
@@ -48,6 +49,7 @@ func (ac *AnimeController) GetAnimeById(id uint) (*models.Anime, error) {
 	}
 	return &anime, nil
 }
+
 func (ac *AnimeController) GetAnimeByTitle(title string) (*models.Anime, error) {
 	db := database.GetDB()
 	var anime models.Anime
@@ -75,27 +77,71 @@ func (ac *AnimeController) UpdateAnime(title, day, imagePath string, animeTime t
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	//harusnya validasi dulu
+
+	// Validasi day
+	validDay := false
+	for _, d := range models.Days {
+		if d == day {
+			validDay = true
+			break
+		}
+	}
+	if !validDay {
+		return nil, errors.New("invalid day")
+	}
+
+	// HAPUS FILE LAMA jika ada file baru yang berbeda
+	if imagePath != "" && imagePath != anime.ImagePath {
+		err := utils.DeleteOldFileIfDifferent(anime.ImagePath, imagePath)
+		if err != nil {
+			// Log error tapi tetap lanjutkan update
+			// (file mungkin sudah terhapus manual)
+		}
+	}
+
+	// Update data
 	animeInput := map[string]interface{}{
 		"Title":      title,
 		"Day":        day,
 		"Time":       animeTime,
 		"ImagePath":  imagePath,
 		"RingToneId": ringToneId,
+		"UpdatedAt":  time.Now(),
 	}
 
 	result = db.Model(&anime).Updates(animeInput)
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
+	// Reload data untuk mendapatkan nilai terbaru
+	db.First(&anime, animeID)
 	return &anime, nil
 }
 
 func (ac *AnimeController) DeleteAnime(id uint) error {
 	db := database.GetDB()
-	result := db.Delete(&models.Anime{}, id)
+
+	// Ambil data anime dulu untuk mendapatkan path file
+	var anime models.Anime
+	result := db.First(&anime, id)
 	if result.Error != nil {
 		return result.Error
 	}
+
+	// Hapus file gambar jika ada
+	if anime.ImagePath != "" {
+		err := utils.DeleteOldFile(anime.ImagePath)
+		if err != nil {
+			// Log error tapi tetap lanjutkan delete
+		}
+	}
+
+	// Delete dari database
+	result = db.Delete(&models.Anime{}, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
 	return nil
 }

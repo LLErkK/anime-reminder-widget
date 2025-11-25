@@ -31,12 +31,28 @@ func NewMainWindow(app fyne.App) *MainWindow {
 	}
 }
 
+// GetWindow returns the underlying fyne.Window
+func (mw *MainWindow) GetWindow() fyne.Window {
+	return mw.window
+}
+
+// SetCloseIntercept sets the close intercept handler
+func (mw *MainWindow) SetCloseIntercept(callback func()) {
+	mw.window.SetCloseIntercept(callback)
+}
+
+// Hide hides the window (minimize to tray)
+func (mw *MainWindow) Hide() {
+	mw.window.Hide()
+}
+
 // Show displays the main window
 func (mw *MainWindow) Show() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Anime List", mw.createAnimeListTab()),
 		container.NewTabItem("Add Anime", mw.createAddAnimeTab()),
 		container.NewTabItem("Ringtones", mw.createRingToneTab()),
+		container.NewTabItem("Settings", mw.createSettingsTab()),
 	)
 
 	mw.window.SetContent(tabs)
@@ -49,6 +65,7 @@ func (mw *MainWindow) ShowAndRun() {
 		container.NewTabItem("Anime List", mw.createAnimeListTab()),
 		container.NewTabItem("Add Anime", mw.createAddAnimeTab()),
 		container.NewTabItem("Ringtones", mw.createRingToneTab()),
+		container.NewTabItem("Settings", mw.createSettingsTab()),
 	)
 
 	mw.window.SetContent(tabs)
