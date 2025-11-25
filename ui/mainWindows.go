@@ -8,33 +8,43 @@ import (
 	"time"
 
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/widget"
 )
 
 type MainWindow struct {
-	app                fyne.App
 	window             fyne.Window
 	animeController    *controllers.AnimeController
 	ringToneController *controllers.RingToneController
 }
 
-func NewMainWindow() *MainWindow {
-	a := app.New()
-	w := a.NewWindow("Anime Reminder")
+// NewMainWindow creates a new main window (receives app from main.go)
+func NewMainWindow(app fyne.App) *MainWindow {
+	w := app.NewWindow("Anime Reminder")
 	w.Resize(fyne.NewSize(800, 600))
 
 	return &MainWindow{
-		app:                a,
 		window:             w,
 		animeController:    &controllers.AnimeController{},
 		ringToneController: &controllers.RingToneController{},
 	}
 }
 
+// Show displays the main window
 func (mw *MainWindow) Show() {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Anime List", mw.createAnimeListTab()),
+		container.NewTabItem("Add Anime", mw.createAddAnimeTab()),
+		container.NewTabItem("Ringtones", mw.createRingToneTab()),
+	)
+
+	mw.window.SetContent(tabs)
+	mw.window.Show()
+}
+
+// ShowAndRun displays and runs the main window (blocking)
+func (mw *MainWindow) ShowAndRun() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Anime List", mw.createAnimeListTab()),
 		container.NewTabItem("Add Anime", mw.createAddAnimeTab()),
@@ -189,7 +199,6 @@ func (mw *MainWindow) createAddAnimeTab() fyne.CanvasObject {
 }
 
 func (mw *MainWindow) createRingToneTab() fyne.CanvasObject {
-	// FORM INPUTS
 	nameEntry := widget.NewEntry()
 	nameEntry.SetPlaceHolder("Ringtone Name")
 
@@ -215,7 +224,6 @@ func (mw *MainWindow) createRingToneTab() fyne.CanvasObject {
 		}, mw.window)
 	})
 
-	// LIST OF RINGTONES - Deklarasi dulu sebelum digunakan
 	var ringToneList *widget.List
 
 	ringToneList = widget.NewList(
@@ -255,7 +263,6 @@ func (mw *MainWindow) createRingToneTab() fyne.CanvasObject {
 		},
 	)
 
-	// ADD RINGTONE BUTTON - Sekarang ringToneList sudah ada
 	addBtn := widget.NewButton("Add Ringtone", func() {
 		if nameEntry.Text == "" || selectedSongPath == "" {
 			dialog.ShowError(fmt.Errorf("please fill all fields"), mw.window)
@@ -277,7 +284,6 @@ func (mw *MainWindow) createRingToneTab() fyne.CanvasObject {
 		ringToneList.Refresh()
 	})
 
-	// LAYOUT
 	form := container.NewVBox(
 		widget.NewLabel("Add New Ringtone"),
 		nameEntry,
@@ -334,9 +340,6 @@ func (mw *MainWindow) showEditAnimeDialog(anime models.Anime) {
 	for i, rt := range ringTones {
 		ringToneNames[i] = rt.Name
 		ringToneMap[rt.Name] = rt.Id
-		if rt.Id == anime.RingToneId {
-			selectedImagePath = rt.Name
-		}
 	}
 
 	selectedRingToneId := anime.RingToneId

@@ -5,14 +5,15 @@ import "time"
 type Anime struct {
 	Id         uint   `gorm:"primary_key;auto_increment"`
 	Title      string `gorm:"size:255"`
-	Day        string
+	Day        string `gorm:"size:50"`
 	Time       time.Time
-	ImagePath  string
+	ImagePath  string `gorm:"size:500"`
 	RingToneId uint
 	CreatedAt  time.Time
 	UpdatedAt  time.Time
 }
 
+// Gunakan kapitalisasi konsisten
 var Days = []string{
-	"Senin", "selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu",
+	"Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu",
 }
